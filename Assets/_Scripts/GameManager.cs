@@ -8,9 +8,12 @@ public class GameManager : MonoBehaviour
     private int score = 0;
     private int totalCoins = 4;
 
+    public bool IsWinConditionMet { get; private set; }
+
     void Awake()
     {
         if (Instance == null) Instance = this;
+        IsWinConditionMet = false;
     }
 
     void Start()
@@ -35,6 +38,7 @@ public class GameManager : MonoBehaviour
     {
         if (score >= totalCoins)
         {
+            IsWinConditionMet = true;
             Debug.Log("You Win! All coins collected.");
         }
     }
@@ -43,5 +47,12 @@ public class GameManager : MonoBehaviour
     public int GetCurrentScore()
     {
         return score;
+    }
+
+    public void ResetGame()
+    {
+        score = 0;
+        IsWinConditionMet = false;
+        UpdateScoreText();
     }
 }

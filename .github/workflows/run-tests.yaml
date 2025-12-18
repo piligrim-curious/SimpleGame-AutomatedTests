@@ -1,0 +1,57 @@
+name: Unity Tests CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Unity Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+        
+    - name: Cache Library
+      uses: actions/cache@v3
+      with:
+        path: Library
+        key: Library-${{ github.sha }}
+        restore-keys: |
+          Library-
+          
+    - name: Run EditMode Tests
+      uses: game-ci/unity-test-runner@v4
+      id: editModeTests
+      with:
+        customImage: 'unityci/editor:ubuntu-2022.3-lts-il2cpp-1.1.1'
+        testMode: EditMode
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        checkName: EditMode Test Results
+        
+    - name: Run PlayMode Tests
+      uses: game-ci/unity-test-runner@v4
+      id: playModeTests
+      with:
+        customImage: 'unityci/editor:ubuntu-2022.3-lts-il2cpp-1.1.1'
+        testMode: PlayMode
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        checkName: PlayMode Test Results
+        
+    - name: Test Results Summary
+      if: always()
+      run: |
+        echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "### EditMode Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- Status: ${{ steps.editModeTests.outputs.testRunResult }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Tests Run: ${{ steps.editModeTests.outputs.testsTotal }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Tests Passed: ${{ steps.editModeTests.outputs.testsResult }}" >> $GITHUB_STEP_SUMMARY
+        echo "### PlayMode Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- Status: ${{ steps.playModeTests.outputs.testRunResult }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Tests Run: ${{ steps.playModeTests.outputs.testsTotal }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Tests Passed: ${{ steps.playModeTests.outputs.testsResult }}" >> $GITHUB_STEP_SUMMARY
